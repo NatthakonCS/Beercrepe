@@ -5,6 +5,7 @@ import time
 import requests 
 import json 
 import pandas as pd # อย่าลืมบรรทัดนี้ ต้องใช้จัดการตารางบัญชีครับ
+from streamlit_gsheets import GSheetsConnection
 
 # ... (import อื่นๆ เดิม) ...
 
