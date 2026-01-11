@@ -297,7 +297,7 @@ def admin_page():
             
         try:
             conn = st.connection("gsheets", type=GSheetsConnection)
-            df_orders = conn.read(ttl=0)
+            df_orders = conn.read(worksheet="Order", ttl=0)
             st.dataframe(df_orders, use_container_width=True)
             
             st.write("---")
