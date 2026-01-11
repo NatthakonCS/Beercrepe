@@ -285,26 +285,46 @@ def admin_page():
         except:
             st.info("ยังไม่มีข้อมูลบัญชี")
             
-    # --- TAB 2: ดูออเดอร์ (Order History) ---
+     # --- TAB 2: ดูออเดอร์ (Order History) ---
     with tab2:
-        st.subheader("🧾 ออเดอร์ที่ลูกค้าสั่งเข้ามา")
-        # เพิ่ม key เข้าไปเพื่อให้ Streamlit ไม่สับสนครับ
-        if st.button("🔄 รีเฟรช", use_container_width=True, key="refresh_admin_orders"): 
-            st.rerun()
+        c_head1, c_head2 = st.columns([3, 1])
+        with c_head1:
+            st.markdown("<h3 style='color:#2c3e50;'>🧾 ออเดอร์ที่ลูกค้าสั่งเข้ามา</h3>", unsafe_allow_html=True)
+        with c_head2:
+            # เพิ่ม key เข้าไปเพื่อให้ Streamlit ไม่สับสนครับ
+            if st.button("🔄 รีเฟรช", use_container_width=True, key="refresh_admin_orders"): 
+                 st.rerun()
             
         try:
-            # อ่านจาก Google Sheet หน้าแรก (ที่เป็น Default)
             conn = st.connection("gsheets", type=GSheetsConnection)
             df_orders = conn.read(ttl=0)
-            
-            # โชว์ข้อมูลแบบตาราง
             st.dataframe(df_orders, use_container_width=True)
             
-            # หรือจะวนลูปโชว์เป็นการ์ดก็ได้
             st.write("---")
-            st.caption("3 รายการล่าสุด:")
-            for index, row in df_orders.tail(3).iterrows():
-                st.info(f"🕒 {row.get('Timestamp')} | 💰 {row.get('Total')} บ. | {row.get('Payment')}\n\n🛒 {row.get('Items')}")
+            st.markdown("<b style='color:#d35400;'>รายการล่าสุด (Card View):</b>", unsafe_allow_html=True)
+            
+            # วนลูปแสดงการ์ดออเดอร์สวยๆ
+            if not df_orders.empty:
+                for index, row in df_orders.tail(5).iloc[::-1].iterrows(): # กลับลำดับเอาล่าสุดขึ้นก่อน
+                    st.markdown(f"""
+                    <div style="
+                        background-color: white; padding: 15px; border-radius: 10px; margin-bottom: 10px;
+                        border-left: 5px solid #e67e22; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+                    ">
+                        <div style="font-weight:bold; color:#2c3e50; font-size:1.1em;">
+                            🛒 {row.get('Items', '-')}
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-top:5px; color:#555;">
+                            <span>🕒 {row.get('Timestamp', '-')}</span>
+                            <span style="font-weight:bold; color:#c0392b;">฿{row.get('Total', '0')}</span>
+                        </div>
+                        <div style="font-size:0.9em; color:#7f8c8d;">
+                            💳 {row.get('Payment', '-')} | 📝 {row.get('Note', '-')}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.info("ยังไม่มีออเดอร์เข้ามาครับ")
                 
         except Exception as e:
             st.error(f"อ่านข้อมูลไม่ได้: {e}")
