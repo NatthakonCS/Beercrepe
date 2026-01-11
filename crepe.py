@@ -291,7 +291,8 @@ def admin_page():
             # 🔴 เปลี่ยนสีหัวข้อตรงนี้เป็นสีส้มครับ
             st.markdown("<h3 style='color:#d35400;'>🧾 ออเดอร์ที่ลูกค้าสั่งเข้ามา</h3>", unsafe_allow_html=True)
         with c_head2:
-            if st.button("🔄 รีเฟรช", use_container_width=True): st.rerun()
+            if st.button("🔄 รีเฟรช", use_container_width=True, key="refresh_admin_orders"): 
+                st.rerun()
             
         try:
             conn = st.connection("gsheets", type=GSheetsConnection)
