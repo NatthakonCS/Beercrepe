@@ -285,27 +285,34 @@ def admin_page():
         except:
             st.info("ยังไม่มีข้อมูลบัญชี")
             
-     # --- TAB 2: ดูออเดอร์ (Order History) ---
+    # --- TAB 2: ดูออเดอร์ (Order History) ---
     with tab2:
         c_head1, c_head2 = st.columns([3, 1])
         with c_head1:
             st.markdown("<h3 style='color:#2c3e50;'>🧾 ออเดอร์ที่ลูกค้าสั่งเข้ามา</h3>", unsafe_allow_html=True)
         with c_head2:
-            # เพิ่ม key เข้าไปเพื่อให้ Streamlit ไม่สับสนครับ
             if st.button("🔄 รีเฟรช", use_container_width=True, key="refresh_admin_orders"): 
                  st.rerun()
-            
+        
         try:
             conn = st.connection("gsheets", type=GSheetsConnection)
+            
+            # 👇👇 จุดสำคัญที่แก้: ระบุ worksheet="Order" 👇👇
             df_orders = conn.read(worksheet="Order", ttl=0)
-            st.dataframe(df_orders, use_container_width=True)
+            # 👆👆 ------------------------------------- 👆👆
+
+            # เช็คว่ามีข้อมูลไหม
+            if df_orders.empty:
+                st.info("ยังไม่มีออเดอร์เข้ามาครับ")
+            else:
+                # แสดงตารางรวม
+                st.dataframe(df_orders, use_container_width=True)
             
-            st.write("---")
-            st.markdown("<b style='color:#d35400;'>รายการล่าสุด (Card View):</b>", unsafe_allow_html=True)
-            
-            # วนลูปแสดงการ์ดออเดอร์สวยๆ
-            if not df_orders.empty:
-                for index, row in df_orders.tail(5).iloc[::-1].iterrows(): # กลับลำดับเอาล่าสุดขึ้นก่อน
+                st.write("---")
+                st.markdown("<b style='color:#d35400;'>รายการล่าสุด (Card View):</b>", unsafe_allow_html=True)
+                
+                # วนลูปแสดงการ์ด (กลับลำดับเอาล่าสุดขึ้นก่อน)
+                for index, row in df_orders.tail(5).iloc[::-1].iterrows(): 
                     st.markdown(f"""
                     <div style="
                         background-color: white; padding: 15px; border-radius: 10px; margin-bottom: 10px;
@@ -323,11 +330,10 @@ def admin_page():
                         </div>
                     </div>
                     """, unsafe_allow_html=True)
-            else:
-                st.info("ยังไม่มีออเดอร์เข้ามาครับ")
                 
         except Exception as e:
             st.error(f"อ่านข้อมูลไม่ได้: {e}")
+            st.info("💡 คำแนะนำ: ลองเช็คว่าใน Google Sheet ชื่อแท็บข้างล่างเขียนว่า 'Order' (ตัว O ใหญ่) ตรงกันเป๊ะหรือไม่")
 
 # ---------------------------------------------------------
 # 2. ข้อมูล (Mock Data)
