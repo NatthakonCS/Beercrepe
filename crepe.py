@@ -194,12 +194,36 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 # ==========================================
-# 🟢 ฟังก์ชันหน้า Admin (ปรับปรุงสีฟอนต์ 🎨)
+# 🟢 ฟังก์ชันหน้า Admin (ปรับสีใหม่ตามสั่ง 🎨)
 # ==========================================
 def admin_page():
-    # ใช้ HTML เพื่อกำหนดสีหัวข้อ
-    st.markdown(f"<h1 style='color:#d35400;'>👮‍♂️ ระบบหลังบ้าน (Staff Only)</h1>", unsafe_allow_html=True)
-    st.write(f"ผู้ใช้งาน: {st.session_state.current_user}")
+    # --- 1. CSS พิเศษสำหรับเปลี่ยนสี Tabs ---
+    st.markdown("""
+    <style>
+        /* เปลี่ยนขนาดและสีตัวหนังสือใน Tab ปกติ */
+        .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {
+            font-size: 1.1rem;
+            color: #555555; /* สีเทาเข้ม */
+        }
+        
+        /* เปลี่ยนสี Tab ตอนที่ถูกกดเลือก (Active) */
+        .stTabs [data-baseweb="tab-list"] button[aria-selected="true"] [data-testid="stMarkdownContainer"] p {
+            color: #d35400 !important; /* สีส้ม */
+            font-weight: bold;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # --- 2. ส่วนหัวข้อและชื่อผู้ใช้งาน ---
+    st.markdown(f"<h1 style='color:#d35400; margin-bottom:0px;'>👮‍♂️ ระบบหลังบ้าน (Staff Only)</h1>", unsafe_allow_html=True)
+    
+    # ปรับสีบรรทัด "ผู้ใช้งาน" (Admin เป็นสีส้ม)
+    st.markdown(f"""
+    <div style='background-color: #fff8e1; padding: 8px 15px; border-radius: 8px; border: 1px solid #ffe0b2; display: inline-block; margin-bottom: 20px;'>
+        <span style='color:#555; font-size:1rem;'>👤 ผู้ใช้งาน: </span>
+        <b style='color:#d35400; font-size:1.1rem;'>{st.session_state.current_user}</b>
+    </div>
+    """, unsafe_allow_html=True)
     
     tab1, tab2 = st.tabs(["💰 บัญชีรายรับ-รายจ่าย", "🧾 ประวัติออเดอร์ (Real-time)"])
     
@@ -210,7 +234,6 @@ def admin_page():
         with st.form("accounting_form"):
             col1, col2 = st.columns(2)
             with col1:
-                # สร้าง Label สีสวยๆ
                 st.markdown("<b style='color:#d35400;'>ประเภทรายการ</b>", unsafe_allow_html=True)
                 acc_type = st.selectbox("เลือกประเภท", ["รายรับ (Income)", "รายจ่าย (Expense)"], label_visibility="collapsed")
             with col2:
@@ -220,7 +243,7 @@ def admin_page():
             st.markdown("<b style='color:#d35400;'>รายละเอียด (Commit Message) *จำเป็น</b>", unsafe_allow_html=True)
             reason = st.text_input("เหตุผล", placeholder="เช่น ซื้อแป้งเพิ่ม, ลูกค้าให้ทิป", label_visibility="collapsed")
             
-            st.write("") # เว้นบรรทัด
+            st.write("") 
             submit_acc = st.form_submit_button("💾 บันทึกรายการ (Commit)", type="primary", use_container_width=True)
             
             if submit_acc:
@@ -260,6 +283,48 @@ def admin_page():
             st.dataframe(df_acc.tail(10), use_container_width=True)
         except:
             st.info("ยังไม่มีข้อมูลบัญชี")
+
+    # --- TAB 2: ดูออเดอร์ (Order History) ---
+    with tab2:
+        c_head1, c_head2 = st.columns([3, 1])
+        with c_head1:
+            # 🔴 เปลี่ยนสีหัวข้อตรงนี้เป็นสีส้มครับ
+            st.markdown("<h3 style='color:#d35400;'>🧾 ออเดอร์ที่ลูกค้าสั่งเข้ามา</h3>", unsafe_allow_html=True)
+        with c_head2:
+            if st.button("🔄 รีเฟรช", use_container_width=True): st.rerun()
+            
+        try:
+            conn = st.connection("gsheets", type=GSheetsConnection)
+            df_orders = conn.read(ttl=0)
+            st.dataframe(df_orders, use_container_width=True)
+            
+            st.write("---")
+            st.markdown("<b style='color:#d35400;'>รายการล่าสุด (Card View):</b>", unsafe_allow_html=True)
+            
+            if not df_orders.empty:
+                for index, row in df_orders.tail(5).iloc[::-1].iterrows(): 
+                    st.markdown(f"""
+                    <div style="
+                        background-color: white; padding: 15px; border-radius: 10px; margin-bottom: 10px;
+                        border-left: 5px solid #e67e22; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+                    ">
+                        <div style="font-weight:bold; color:#2c3e50; font-size:1.1em;">
+                            🛒 {row.get('Items', '-')}
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-top:5px; color:#555;">
+                            <span>🕒 {row.get('Timestamp', '-')}</span>
+                            <span style="font-weight:bold; color:#c0392b;">฿{row.get('Total', '0')}</span>
+                        </div>
+                        <div style="font-size:0.9em; color:#7f8c8d;">
+                            💳 {row.get('Payment', '-')} | 📝 {row.get('Note', '-')}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.info("ยังไม่มีออเดอร์เข้ามาครับ")
+                
+        except Exception as e:
+            st.error(f"อ่านข้อมูลไม่ได้: {e}")
 
     # --- TAB 2: ดูออเดอร์ (Order History) ---
     with tab2:
