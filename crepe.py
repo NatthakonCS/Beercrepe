@@ -644,6 +644,7 @@ elif st.session_state.page == 'cart':
     
     # ... (โค้ดเดิมของคุณ: บรรทัดที่สั่งบันทึกลง Sheets) ...
     # ปกติจะหน้าตาประมาณ conn.create(...) หรือ conn.write(...)
+            conn = st.connection("gsheets", type=GSheetsConnection)
             conn.create(worksheet="Order", data=order_data)
 
     # -------------------------------------------------------
