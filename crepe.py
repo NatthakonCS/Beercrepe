@@ -539,11 +539,29 @@ if st.session_state.page == 'home':
     st.write("")
 
 # ==========================================
-# PAGE: DETAIL
+# PAGE: DETAIL (หน้ารายละเอียด + เลือกท็อปปิ้ง)
 # ==========================================
 elif st.session_state.page == 'detail':
     item = st.session_state.selected_item
     
+    # --- 🎨 1. เพิ่ม CSS ปรับฟอนต์ท็อปปิ้งตรงนี้ครับ ---
+    st.markdown("""
+    <style>
+        /* ปรับตัวหนังสือใน Checkbox (ท็อปปิ้ง) */
+        div[data-testid="stCheckbox"] label p {
+            font-size: 18px !important;      /* ขนาดตัวอักษร */
+            font-family: 'Prompt', sans-serif !important; /* ฟอนต์ Prompt */
+            font-weight: 600 !important;     /* ความหนา (Bold) */
+            color: #2c3e50 !important;       /* สีตัวอักษร */
+        }
+        /* ปรับระยะห่างระหว่างบรรทัดให้ดูไม่อึดอัด */
+        div[data-testid="stCheckbox"] {
+            margin-bottom: 5px; 
+        }
+    </style>
+    """, unsafe_allow_html=True)
+    # ------------------------------------------------
+
     if st.button("⬅️ ย้อนกลับ"):
         navigate_to('home')
 
@@ -558,7 +576,8 @@ elif st.session_state.page == 'detail':
     """, unsafe_allow_html=True)
     
     with st.form("order_form"):
-        st.markdown("#### 🛠️ เลือกท็อปปิ้ง (Toppings)")
+        # ใส่สีหัวข้อให้สวยงามด้วย
+        st.markdown("<h4 style='color:#d35400;'>🛠️ เลือกท็อปปิ้ง (Toppings)</h4>", unsafe_allow_html=True)
         
         c1, c2 = st.columns(2)
         with c1:
@@ -568,9 +587,10 @@ elif st.session_state.page == 'detail':
             add_choc = st.checkbox("ซอสช็อก (+5฿)")
             add_cheese = st.checkbox("ชีส (+15฿)")
             
-        st.markdown("#### 📝 โน้ต (ถ้ามี)")
+        st.markdown("<h4 style='color:#d35400;'>📝 โน้ต (ถ้ามี)</h4>", unsafe_allow_html=True)
         note = st.text_input("ระบุรายละเอียด", placeholder="เช่น ไม่กรอบ, หวานน้อย")
         
+        st.write("") # เว้นบรรทัดนิดนึง
         submitted = st.form_submit_button("🛒 ใส่ตะกร้าเลย", type="primary", use_container_width=True)
         
         if submitted:
